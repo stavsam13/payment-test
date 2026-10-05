@@ -73,19 +73,36 @@ Stop it anytime with **Ctrl + C**.
 
 ### Test Variables
 
-| Variable     | Value         |
-| ------------ | ------------- |
-| `userId`     | `test_user_1` |
-| `cardNumber` | `123456789`   |
-| `action`     | `block`       |
+| Variable     | Value                                                                                                   |
+| ------------ | ------------------------------------------------------------------------------------------------------- |
+| `userId`     | `test_user_1` (the customer, or the agent's id when `actorType=AGENT`)                                  |
+| `cardNumber` | `123456789`                                                                                             |
+| `action`     | `block` / `unblock`                                                                                     |
+| `actorType`  | `CUSTOMER` / `AGENT` / `SYSTEM` (ownership is checked only for `CUSTOMER`)                              |
+| `reason`     | `CARD_LOST` / `CARD_STOLEN` / `SUSPECTED_FRAUD` / `CARD_FOUND` / `FRAUD_CLEARED` / `CUSTOMER_REQUEST` / `OTHER` |
 
 ### Example cURL Command
 
 ```bash
-curl -X GET "http://localhost:8080/cards/123456789?action=block&userId=test_user_1"
+curl -X GET "http://localhost:8080/cards/123456789?action=block&userId=test_user_1&actorType=CUSTOMER&reason=CARD_LOST"
 ```
 
-You should see a JSON or text response confirming the action or card details.
+The response contains the `outcome` (`SUCCEEDED` / `REJECTED` / `FAILED`) and, when rejected, a `failureReason`
+(`CARD_NOT_FOUND` → 404, `NOT_CARD_OWNER` → 403, `ALREADY_BLOCKED` / `ALREADY_ACTIVE` → 409).
+
+### Card Activity Audit (Customer Support)
+
+Every block/unblock attempt, including rejected and failed ones, is stored in the append-only `card_audit_events`
+table. The audit never stores the card number, CVV or expiry date; cards are referenced by their internal id.
+
+Agents can list a customer's card activity, newest first:
+
+```bash
+curl -X GET "http://localhost:8080/support/users/test_user_1/card-activity?page=0&size=20"
+```
+
+> ⚠️ v1 has no authentication: `userId`/`actorType` are taken from the request, and `/support/**` must only be
+> routed from internal networks.
 
 ---
 
@@ -134,4 +151,5 @@ If port `8080` is busy, specify another port:
 | `./gradlew clean build`                                                               | Clean, compile, test, and package the app |
 | `./gradlew clean bootRun`                                                             | Run directly from source                  |
 | `java -jar build/libs/<your-app>.jar`                                                 | Run the packaged JAR                      |
-| `curl -X GET "http://localhost:8080/cards/123456789?action=block&userId=test_user_1"` | Test endpoint                             |
+| `curl -X GET "http://localhost:8080/cards/123456789?action=block&userId=test_user_1&actorType=CUSTOMER&reason=CARD_LOST"` | Test endpoint |
+| `curl -X GET "http://localhost:8080/support/users/test_user_1/card-activity"` | Card activity for support |

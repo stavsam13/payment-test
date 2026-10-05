@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <!-- Append-only audit of card block/unblock attempts. Never add PAN, CVV or expiry columns here. -->
+    <changeSet author="java.developer" id="create.card.audit.events.table">
+
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="card_audit_events"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="card_audit_events">
+            <column name="id" type="VARCHAR">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+            <column name="card_id" type="VARCHAR"/>
+            <column name="customer_user_id" type="VARCHAR"/>
+            <column name="action" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="outcome" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="failure_reason" type="VARCHAR"/>
+            <column name="reason" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="previous_status" type="VARCHAR"/>
+            <column name="new_status" type="VARCHAR"/>
+            <column name="actor_type" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="actor_id" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="occurred_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="card_audit_events" indexName="idx_card_audit_events_customer_occurred">
+            <column name="customer_user_id"/>
+            <column name="occurred_at"/>
+        </createIndex>
+
+    </changeSet>
+
+</databaseChangeLog>
