@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet author="java.developer" id="create.cards.table">
+
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="cards"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="cards">
+            <column name="id" type="VARCHAR">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+            <column name="card_number" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cvv" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expiry_date" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+    </changeSet>
+
+    <changeSet id="insert.cards" author="ruslans.tufetulovs">
+        <insert tableName="cards">
+            <column name="id" value="test_card_1"/>
+            <column name="card_number" value="123456789"/>
+            <column name="cvv" value="123"/>
+            <column name="expiry_date" value="01/30"/>
+            <column name="user_id" value="test_user_1"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>
+
